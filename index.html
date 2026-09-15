@@ -182,6 +182,38 @@
   <noscript><p class="container detail-note">يرجى تفعيل JavaScript لعرض المشاريع والوحدات واستخدام البحث. Please enable JavaScript to browse listings.</p></noscript>
   <script>
     'use strict';
+    if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+
+    function clearSectionHash() {
+      if (window.location.hash) {
+        history.replaceState(history.state, '', window.location.pathname + window.location.search);
+      }
+    }
+    const isPageReload = performance.getEntriesByType('navigation')[0]?.type === 'reload';
+    // Clear a reload fragment before the browser can navigate to it. Direct links keep theirs.
+    if (isPageReload) clearSectionHash();
+    window.addEventListener('pageshow', event => {
+      if (!isPageReload || event.persisted) return;
+      clearSectionHash();
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+      requestAnimationFrame(() => {
+        window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+        syncActiveNavigation();
+      });
+    });
+
+    function sectionNavigationTarget(link, event) {
+      if (link.tagName !== 'A' || event.defaultPrevented || event.button !== 0 ||
+          event.ctrlKey || event.metaKey || event.shiftKey || event.altKey ||
+          link.hasAttribute('download') || (link.target && link.target !== '_self')) return null;
+      const href = link.getAttribute('href');
+      if (!href?.startsWith('#') || href === '#') return null;
+      let target;
+      try { target = document.getElementById(decodeURIComponent(href.slice(1))); }
+      catch { return null; }
+      // Only page landmarks: never modal controls, form fields, or placeholder links.
+      return target?.matches('main, main section') ? target : null;
+    }
     // Original prototype inventory is retained below, with its imagery and prices.
     // These records remain demonstration data, not verified Amazing Will listings.
     const properties = [
@@ -1079,10 +1111,14 @@
       else if(b.hasAttribute('data-reset'))resetFilters();
       else if(b.hasAttribute('data-policy'))policy(b.dataset.policy);
       if(b.dataset.path==='units')resetFilters();
-      if(b.closest('#mainNav')&&b.tagName==='A'){
-        closeMenu();setActiveNavigation(b.hash.slice(1));
-        const target=$(b.hash),heading=target?.querySelector('h1,h2') || target;
-        if(heading){heading.setAttribute('tabindex','-1');requestAnimationFrame(()=>heading.focus({preventScroll:true}));}
+      const target=sectionNavigationTarget(b,event);
+      if(target){
+        event.preventDefault();closeMenu();
+        if(b.closest('#mainNav'))setActiveNavigation(target.id);
+        const heading=target.querySelector('h1,h2') || target;
+        heading.setAttribute('tabindex','-1');heading.focus({preventScroll:true});
+        target.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',block:'start'});
+        clearSectionHash();
       }
     });
     function setInvestmentMenu(open,focusIndex=null){
