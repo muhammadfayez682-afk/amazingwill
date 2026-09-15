@@ -65,6 +65,11 @@
     /* Focused UX cleanup: reuse the existing cards, typography and palette. */
     .unit-status-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;border-top:1px solid var(--border);margin-top:15px;padding-top:15px}.unit-status-label{font-size:12px;color:var(--text-soft)}.unit-status-row .filters{flex-wrap:wrap}.services-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px}.service-icon{color:var(--gold);display:block;margin-bottom:14px}.service-icon svg{width:29px;height:29px}.services-grid .card-description{margin-bottom:0}.socials{flex-wrap:wrap}.social:disabled{opacity:.7}.curated-highlights{grid-template-columns:minmax(0,1fr);max-width:800px}.upcoming .curated-highlights{grid-template-columns:minmax(0,1fr)}.upcoming .curated-highlights .compact-card{grid-template-columns:42% 1fr}.upcoming .curated-highlights .compact-card>img{height:100%}.project-relationship{margin-inline-start:6px}
     @media(max-width:600px){.services-grid{grid-template-columns:1fr;gap:16px}.unit-status-row{gap:8px}.unit-status-row .filter-btn{padding:6px 12px;font-size:12px}.curated-highlights .compact-card,.upcoming .curated-highlights .compact-card{grid-template-columns:1fr}.curated-highlights .compact-card>img,.upcoming .curated-highlights .compact-card>img{height:190px}.project-relationship{margin-inline-start:0;margin-top:4px}}
+    /* Investment navigation uses the existing header dimensions and breakpoints. */
+    .nav-investment{position:relative}.nav-investment-toggle{display:flex;align-items:center;gap:6px;background:none;border:0;padding-block:30px;font-size:13px;white-space:nowrap;position:relative}.nav-investment-toggle svg{width:12px;height:12px;transition:transform .18s}.nav-investment-toggle[aria-expanded=true] svg{transform:rotate(180deg)}.nav-investment-toggle:hover,.nav-investment-toggle.active{color:var(--brand)}.nav-investment-toggle.active:after{content:"";position:absolute;bottom:19px;height:2px;background:var(--gold);width:18px;inset-inline-start:0}.investment-submenu{position:absolute;inset-inline-start:0;top:100%;width:218px;padding:7px;background:var(--surface);border:1px solid var(--border);border-top:2px solid var(--gold-soft);border-radius:0 0 9px 9px;box-shadow:var(--shadow-sm);z-index:40}.main-nav .investment-submenu a{display:flex;align-items:center;min-height:44px;padding:10px 13px;border-radius:5px;font-size:13px;color:var(--brand);white-space:normal}.main-nav .investment-submenu a:hover,.main-nav .investment-submenu a:focus-visible{background:var(--surface-2)}.main-nav .investment-submenu a:after{display:none}
+    @media(max-width:1200px){.nav-investment-toggle{font-size:12px}}
+    @media(max-width:900px){.main-nav.open{max-height:calc(100dvh - 76px);overflow-y:auto}.nav-investment-toggle{width:100%;justify-content:space-between;padding-block:12px;font-size:14px;min-height:44px}.nav-investment-toggle.active:after{bottom:6px}.nav-investment.is-open{grid-column:1/-1}.investment-submenu{position:static;width:100%;padding:4px 8px;margin-bottom:8px;border:0;border-inline-start:2px solid var(--gold-soft);border-radius:0;background:var(--bg);box-shadow:none}.main-nav .investment-submenu a{min-height:44px;font-size:13px}}
+    @media(max-width:600px){.main-nav.open{max-height:calc(100dvh - 69px)}}
   </style>
 </head>
 <body>
@@ -76,7 +81,17 @@
         <div dir="ltr"><div class="brand-name">AMAZING WILL</div><span class="brand-caption">REAL ESTATE</span></div>
       </a>
       <nav class="main-nav" id="mainNav" aria-label="التنقل الرئيسي">
-        <a href="#home" class="active" data-en="Home">الرئيسية</a><a href="#projects" data-en="Projects">المشاريع</a><a href="#units" data-en="Units">الوحدات</a><a href="#investment" data-en="Investments">الفرص الاستثمارية</a><a href="#international" data-en="International">المستثمر الدولي</a><a href="#about" data-en="About us">من نحن</a><a href="#contact" data-en="Contact">تواصل معنا</a>
+        <a href="#home" class="active" aria-current="location" data-en="Home">الرئيسية</a><a href="#projects" data-en="Projects">المشاريع</a><a href="#units" data-en="Units">الوحدات</a>
+        <div class="nav-investment" id="investmentNav">
+          <button class="nav-investment-toggle" id="investmentNavToggle" type="button" aria-expanded="false" aria-haspopup="menu" aria-controls="investmentSubmenu"><span data-en="Investment">الاستثمار</span><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m2 4 4 4 4-4"/></svg></button>
+          <div class="investment-submenu" id="investmentSubmenu" role="menu" aria-labelledby="investmentNavToggle" hidden>
+            <a href="#investment" role="menuitem" tabindex="-1" data-en="Investment opportunities">الفرص الاستثمارية</a>
+            <!-- Local investors currently use the existing opportunities section. -->
+            <a href="#investment" role="menuitem" tabindex="-1" data-en="Local investor">المستثمر المحلي</a>
+            <a href="#international" role="menuitem" tabindex="-1" data-en="International investor">المستثمر الدولي</a>
+          </div>
+        </div>
+        <a href="#about" data-en="About us">من نحن</a><a href="#contact" data-en="Contact">تواصل معنا</a>
       </nav>
       <div class="header-actions">
         <div class="language-switch" aria-label="Language"><button type="button" data-lang="ar" aria-pressed="true" lang="ar">العربية</button><span aria-hidden="true">|</span><button type="button" data-lang="en" aria-pressed="false" lang="en">EN</button></div>
@@ -1064,12 +1079,64 @@
       else if(b.hasAttribute('data-reset'))resetFilters();
       else if(b.hasAttribute('data-policy'))policy(b.dataset.policy);
       if(b.dataset.path==='units')resetFilters();
-      if(b.closest('#mainNav')&&b.tagName==='A'){closeMenu();$$('#mainNav a').forEach(a=>a.classList.toggle('active',a===b));}
+      if(b.closest('#mainNav')&&b.tagName==='A'){
+        closeMenu();setActiveNavigation(b.hash.slice(1));
+        const target=$(b.hash),heading=target?.querySelector('h1,h2') || target;
+        if(heading){heading.setAttribute('tabindex','-1');requestAnimationFrame(()=>heading.focus({preventScroll:true}));}
+      }
     });
-    function closeMenu(){$('#mainNav').classList.remove('open');$('#menuToggle').setAttribute('aria-expanded','false');}
-    $('#menuToggle').addEventListener('click',()=>{const open=$('#mainNav').classList.toggle('open');$('#menuToggle').setAttribute('aria-expanded',String(open));});
-    document.addEventListener('keydown',event=>{if(event.key==='Escape'&&$('#mainNav').classList.contains('open')){closeMenu();$('#menuToggle').focus();}});
-    document.addEventListener('click',event=>{if(!event.target.closest('.site-header'))closeMenu();});
+    function setInvestmentMenu(open,focusIndex=null){
+      $('#investmentNav').classList.toggle('is-open',open);
+      $('#investmentNavToggle').setAttribute('aria-expanded',String(open));
+      $('#investmentSubmenu').hidden=!open;
+      const links=$$('#investmentSubmenu a');
+      links.forEach((link,index)=>link.tabIndex=open&&index===(focusIndex??0)?0:-1);
+      if(open&&focusIndex!==null)links[focusIndex].focus();
+    }
+    function closeMenu(){setInvestmentMenu(false);$('#mainNav').classList.remove('open');$('#menuToggle').setAttribute('aria-expanded','false');}
+    $('#investmentNavToggle').addEventListener('click',event=>{
+      const open=$('#investmentSubmenu').hidden;
+      setInvestmentMenu(open,open&&event.detail===0?0:null);
+    });
+    $('#investmentNav').addEventListener('keydown',event=>{
+      const links=$$('#investmentSubmenu a'),index=links.indexOf(document.activeElement);
+      if(!['ArrowDown','ArrowUp','Home','End'].includes(event.key))return;
+      event.preventDefault();
+      const next=event.key==='Home'?0:event.key==='End'?links.length-1:event.key==='ArrowDown'?(index+1)%links.length:index<0?links.length-1:(index-1+links.length)%links.length;
+      setInvestmentMenu(true,next);
+    });
+    $('#investmentNav').addEventListener('focusout',event=>{if(!$('#investmentNav').contains(event.relatedTarget))setInvestmentMenu(false);});
+    $('#menuToggle').addEventListener('click',()=>{const open=!$('#mainNav').classList.contains('open');closeMenu();$('#mainNav').classList.toggle('open',open);$('#menuToggle').setAttribute('aria-expanded',String(open));});
+    document.addEventListener('keydown',event=>{
+      if(event.key!=='Escape')return;
+      if(!$('#investmentSubmenu').hidden){event.preventDefault();setInvestmentMenu(false);$('#investmentNavToggle').focus();}
+      else if($('#mainNav').classList.contains('open')){closeMenu();$('#menuToggle').focus();}
+    });
+    document.addEventListener('click',event=>{if(!event.target.closest('#investmentNav'))setInvestmentMenu(false);if(!event.target.closest('.site-header'))closeMenu();});
+    matchMedia('(max-width:900px)').addEventListener('change',event=>{
+      const hadFocus=$('#mainNav').contains(document.activeElement);closeMenu();
+      if(hadFocus)(event.matches?$('#menuToggle'):$('#investmentNavToggle')).focus();
+      syncActiveNavigation();
+    });
+    function setActiveNavigation(sectionId){
+      const current=sectionId==='international'?'investment':sectionId;
+      $$('#mainNav > a, #investmentNavToggle').forEach(item=>{
+        const active=(item.id==='investmentNavToggle'?'investment':item.hash.slice(1))===current;
+        item.classList.toggle('active',active);
+        if(active)item.setAttribute('aria-current','location');else item.removeAttribute('aria-current');
+      });
+    }
+    function syncActiveNavigation(){
+      const threshold=$('.site-header').getBoundingClientRect().height+50;
+      let current='home';
+      ['home','projects','units','investment','international','about','contact'].forEach(id=>{if($('#'+id).getBoundingClientRect().top<=threshold)current=id;});
+      setActiveNavigation(current);
+    }
+    let navigationFrame=0;
+    window.addEventListener('scroll',()=>{if(!navigationFrame)navigationFrame=requestAnimationFrame(()=>{navigationFrame=0;syncActiveNavigation();});},{passive:true});
+    window.addEventListener('resize',syncActiveNavigation);
+    window.addEventListener('hashchange',syncActiveNavigation);
+    window.addEventListener('load',syncActiveNavigation);
     function switchLanguage(next) {
       if(next===language)return;language=next;document.documentElement.lang=next;document.documentElement.dir=next==='ar'?'rtl':'ltr';
       $$('[data-en]').forEach(el=>{if(!el.dataset.ar)el.dataset.ar=el.textContent;el.textContent=next==='en'?el.dataset.en:el.dataset.ar;});
@@ -1082,7 +1149,7 @@
     // Graceful image fallback keeps cards usable if a third-party photo is unavailable.
     document.addEventListener('error',event=>{const img=event.target;if(img.tagName!=='IMG'||img.dataset.fallback)return;img.dataset.fallback='true';img.src="data:image/svg+xml,"+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="800" height="500" viewBox="0 0 800 500"><rect width="800" height="500" fill="#e5e9df"/><g fill="none" stroke="#9bac99" stroke-width="3"><path d="M120 390V180l180-70 180 70v210M480 220h170v170M90 390h590M210 390V240h180v150M240 160v-40"/><path d="M280 240v150M340 240v150M530 260h70v60h-70Z"/></g></svg>');},{capture:true});
     $$('[data-icon]').forEach(el=>el.innerHTML=icons[el.dataset.icon]||'');
-    refreshInventoryViews();renderInvestments();renderTrust();
+    refreshInventoryViews();renderInvestments();renderTrust();syncActiveNavigation();
   </script>
 </body>
 </html>
