@@ -1,0 +1,23 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
+const root=path.join(__dirname,'..'),fixtures=require('../presentation-data.js'),context=vm.createContext({});
+vm.runInContext(fs.readFileSync(path.join(root,'inventory.js'),'utf8'),context);
+const projects=vm.runInContext('projects',context),units=fixtures.buildUnits(projects);
+assert.equal(units.length,17);assert.equal(new Set(units.map(u=>u.id)).size,17);
+assert.deepEqual(new Set(units.map(u=>u.stage)),new Set(['جاهزة','تحت الإنشاء']));
+assert.deepEqual(new Set(units.map(u=>u.status)),new Set(['متاحة','مباعة']));
+for(const p of projects){const stock=units.filter(u=>u.projectId===p.id);assert.equal(stock.reduce((s,u)=>s+u.quantity,0),p.inventory.reduce((s,u)=>s+u.quantity,0));assert.ok(stock.every(u=>u.quantity>0));}
+assert.deepEqual(new Set(units.map(fixtures.unitCategory)),new Set(['متاحة','مباعة','إعادة بيع']));
+assert.ok(units.filter(u=>u.projectId==='alba').every(u=>u.status==='مباعة'));
+assert.deepEqual(fixtures.totals(fixtures.campaigns),{visits:24520,leads:742,requests:645});
+assert.equal(fixtures.rate(742,24520),'3.0');assert.equal(fixtures.rate(240,8200),'2.9');assert.equal(fixtures.rate(184,5100),'3.6');assert.equal(fixtures.rate(1,0),'0.0');
+const data=fixtures.createPortalState(projects);assert.equal(data.ads.length,12);assert.equal(data.ads.reduce((n,a)=>n+a.views,0),5400);assert.equal(data.leads.length,86);
+assert.equal(new Set(data.ads.map(a=>a.status)).size,5);assert.equal(new Set(data.leads.map(l=>l.status)).size,4);assert.equal(new Set(data.commissions.map(c=>c.status)).size,3);
+assert.ok(data.leads.every(l=>data.ads.some(a=>a.id===l.adId)));assert.ok(data.commissions.every(c=>data.ads.some(a=>a.id===c.adId)));
+data.ads[0].status='معتمد';assert.equal(fixtures.createPortalState(projects).ads[0].status,'مسودة');
+for(const file of ['inventory.js','presentation-data.js','platform.js','portal.js'])new vm.Script(fs.readFileSync(path.join(root,file),'utf8'));
+for(const file of ['portal.js','platform.js','presentation-data.js'])assert.ok(!/\bfetch\s*\(|localStorage|sessionStorage|XMLHttpRequest|sendBeacon/.test(fs.readFileSync(path.join(root,file),'utf8')));
+const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
+assert.ok(!/local-investor|المستثمر المحلي|id="unitStage"/.test(html));
+assert.deepEqual([...html.matchAll(/data-unit-status="([^"]+)"/g)].map(m=>m[1]),['all','متاحة','مباعة','إعادة بيع']);
+for(const id of ['projects','units','investment','international','services','events'])assert.equal((html.match(new RegExp(`id="${id}"`,'g'))||[]).length,1);
+console.log('PASS: shared inventory, independent stages/statuses, demo distributions, analytics arithmetic, fresh sessions, no duplicate sections or new network integrations');
